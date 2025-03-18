@@ -25,7 +25,11 @@ interface AdvancedScanOptions {
   scanHistory: boolean;
 }
 
-export const ScannerForm = () => {
+interface ScannerFormProps {
+  onScanStart?: (repository: string) => void;
+}
+
+export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
   const { runScan, loading, currentScan } = useScanStore();
   const [repository, setRepository] = useState('');
   const [branch, setBranch] = useState('main');
@@ -47,6 +51,11 @@ export const ScannerForm = () => {
     e.preventDefault();
     
     if (!repository) return;
+    
+    // Notify parent component that scanning has started
+    if (onScanStart) {
+      onScanStart(repository);
+    }
     
     try {
       // Include advanced options in the scan request
