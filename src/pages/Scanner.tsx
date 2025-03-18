@@ -35,11 +35,6 @@ const Scanner = () => {
       setScanningStatus('scanning');
     } else if (currentScan && !showForm) {
       setScanningStatus('success');
-      // Small delay to show the success state before redirecting
-      const timer = setTimeout(() => {
-        setShowForm(false);
-      }, 1000);
-      return () => clearTimeout(timer);
     }
   }, [loading, currentScan, showForm]);
 
@@ -50,6 +45,8 @@ const Scanner = () => {
 
   const handleScanStart = (repo: string) => {
     setRepository(repo);
+    // Ensure we're showing the form while loading is happening
+    setShowForm(true);
   };
 
   return (

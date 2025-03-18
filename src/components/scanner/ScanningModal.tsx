@@ -11,8 +11,11 @@ interface ScanningModalProps {
 }
 
 export const ScanningModal = ({ isOpen, status, repository }: ScanningModalProps) => {
+  // Force dialog to be open when isOpen is true
+  const open = isOpen;
+  
   return (
-    <Dialog open={isOpen}>
+    <Dialog open={open} modal={true}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">

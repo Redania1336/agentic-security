@@ -51,6 +51,7 @@ export const useScanStore = (): ScanStore => {
 
   const runScan = async (request: ScanRequest): Promise<ScanResult> => {
     setLoading(true);
+    console.log('Scan started, loading state:', true);
     
     try {
       // Prepare request payload with advanced options
@@ -166,6 +167,7 @@ export const useScanStore = (): ScanStore => {
       const mockResult = generateMockScanResult(request.repository, request.branch);
       return mockResult;
     } finally {
+      console.log('Scan completed, setting loading state to false');
       setLoading(false);
     }
   };
