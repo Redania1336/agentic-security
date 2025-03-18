@@ -17,6 +17,7 @@ const Scanner = () => {
   const [showForm, setShowForm] = useState(true);
   const [scanningStatus, setScanningStatus] = useState<'scanning' | 'success' | 'error'>('scanning');
   const [repository, setRepository] = useState('');
+  const [scanComplete, setScanComplete] = useState(false);
 
   // Check if result was passed from history page
   useEffect(() => {
@@ -29,14 +30,31 @@ const Scanner = () => {
     }
   }, [location.state, currentScan]);
 
-  // Handle loading state changes
+  // Handle loading state changes and control scan status
   useEffect(() => {
     if (loading) {
       setScanningStatus('scanning');
-    } else if (currentScan && !showForm) {
+      setScanComplete(false);
+    } else if (currentScan && showForm) {
+      // Scan has just finished but we're still showing the form
       setScanningStatus('success');
+      setScanComplete(true);
     }
   }, [loading, currentScan, showForm]);
+
+  // Handle automatic redirection to results when scan completes
+  useEffect(() => {
+    if (scanComplete && currentScan) {
+      // Show success state briefly before redirecting
+      const timer = setTimeout(() => {
+        setResult(currentScan);
+        setShowForm(false);
+        setScanComplete(false);
+      }, 1500); // Delay for 1.5 seconds to show success animation
+      
+      return () => clearTimeout(timer);
+    }
+  }, [scanComplete, currentScan]);
 
   const handleNewScan = () => {
     setResult(null);
@@ -66,7 +84,7 @@ const Scanner = () => {
         )}
         
         <ScanningModal 
-          isOpen={loading} 
+          isOpen={loading || scanComplete} 
           status={scanningStatus}
           repository={repository}
         />
