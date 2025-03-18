@@ -42,9 +42,91 @@ The project follows a structured multi-phase development approach:
 
 ## Edge Function Details
 
-The Security Scanner Edge Function provides the backend scanning capabilities:
+The Security Scanner Edge Function (`security-scanner`) provides the backend scanning capabilities with comprehensive code analysis features:
 
-### API Endpoints
+### Key Features
+
+- **Severity Classification**: Categorizes findings into critical, high, medium, low, and info levels
+- **Code Context Analysis**: Extracts vulnerable code snippets with file path and line number information
+- **Detailed Remediation**: Provides specific recommendations for fixing each vulnerability
+- **Reference Links**: Includes security reference documentation and standards
+- **GitHub Integration**: Creates issues for critical and high severity findings
+- **Historical Tracking**: Maintains scan history with trend analysis
+- **Email Reporting**: Sends detailed scan reports with customizable content
+- **Configurable Scanning**: Allows customization of scan depth, file types, and focus areas
+
+### Implementation Details
+
+The Security Scanner edge function is implemented as a Deno-based serverless function with:
+
+- CORS support for cross-origin requests
+- Comprehensive error handling and logging
+- Mock data generation for development and testing
+
+### AI-Powered Analysis Technology
+
+The security scanner leverages advanced AI capabilities through:
+
+#### Vector Store & Semantic Search
+
+The `vector-file` edge function enables powerful code analysis through:
+
+- **Vector Embeddings**: Code snippets and patterns are converted to vector representations for semantic similarity matching
+- **Storage Management**: Creates and manages vector stores with file indexing and chunking strategies
+- **Hybrid Search**: Combines semantic and keyword search for high-precision vulnerability detection
+- **Context-Aware Analysis**: Uses surrounding code context to understand vulnerability patterns
+
+#### OpenAI Agent Integration
+
+- **GPT-4o Integration**: Leverages OpenAI's latest models for vulnerability analysis
+- **Web-Enhanced Security Data**: Utilizes GPT-4o-search-preview to find the latest CVEs and security advisories
+- **Auto-Learning**: Saves web search results back into the vector store for future reference
+- **Multi-Modal Security Analysis**: Text, code, and configuration files are analyzed together
+- **Remediation Generation**: Uses AI to generate detailed, context-aware fix recommendations
+- **Severity Classification**: AI-powered determination of vulnerability severity levels
+
+#### Vector File Edge Function Endpoints
+
+The vector-file edge function provides these key capabilities:
+
+- `/create-store`: Creates a new vector store for a repository
+  ```
+  POST /vector-file/create-store
+  Body: { "name": "repo-name", "expiresAfter": "30d" }
+  Returns: { "id": "vs_..." }
+  ```
+
+- `/upload-file`: Uploads code files for analysis
+  ```
+  POST /vector-file/upload-file
+  FormData: file
+  Returns: { "id": "file_..." }
+  ```
+
+- `/add-file`: Adds a file to a vector store with chunking options
+  ```
+  POST /vector-file/add-file
+  Body: { "vectorStoreId": "vs_...", "fileId": "file_...", "chunkingStrategy": {...} }
+  Returns: { "success": true }
+  ```
+
+- `/search`: Performs semantic search across codebase
+  ```
+  POST /vector-file/search
+  Body: { "vectorStoreId": "vs_...", "query": "insecure password storage", "maxResults": 10 }
+  Returns: Vector search results
+  ```
+
+- `/query`: Enhanced search with web augmentation
+  ```
+  POST /vector-file/query
+  Body: { "vectorStoreId": "vs_...", "question": "Are there any SQL injection vulnerabilities?", "webSearch": {"enabled": true} }
+  Returns: { "vector_results": [...], "web_results": [...], "answer": "..." }
+  ```
+
+For a detailed walkthrough of how this project was built using Roo Code Power Steering and our process-focused development methodology, see the [tutorial.md](./tutorial.md) file.
+
+### Available API Endpoints
 
 1. `/init-scan`: Initialize a vector store for a repository
    ```
@@ -90,9 +172,31 @@ The Security Scanner Edge Function provides the backend scanning capabilities:
 
 ### Environment Variables
 
-- `OPENAI_API_KEY`: Required for OpenAI API access
+- `API_KEY`: Required for API authentication
+- `AUTH_TOKEN`: Token used for GitHub API authorization
+- `OPENAI_API_KEY`: Required for OpenAI API integration (similarity detection and recommendations)
 - `GITHUB_TOKEN`: GitHub API token for repository access and issue creation
 - `RESEND_API_KEY`: API key for the Resend email service
+
+## Vulnerability Testing Resources
+
+The `vulnerabilities/` directory contains a comprehensive collection of sample security issues that can be used for:
+
+- Testing the scanner's detection capabilities
+- Demonstrating different severity levels (Critical, High, Medium, Low)
+- Showing vulnerability patterns across multiple languages and technologies
+- Training and educational purposes
+
+### Sample Vulnerabilities
+
+The collection includes examples of:
+- SQL injection in Python and PHP
+- Cross-site scripting (XSS) in React/JSX
+- Hardcoded credentials in JavaScript
+- Command injection in Ruby
+- Insecure Docker configurations
+- Path traversal vulnerabilities
+- And many more security issues that security scanners should detect
 
 ## Development Approach
 
