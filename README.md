@@ -1,69 +1,159 @@
-# Welcome to your Lovable project
 
-## Project info
+# Agentic Security Scanner
 
-**URL**: https://lovable.dev/projects/9ba29062-39fb-4d9d-a150-4dc29accb7fd
+![Agentic Security Scanner](public/og-image.png)
 
-## How can I edit this code?
+## Overview
 
-There are several ways of editing your application.
+The Agentic Security Scanner is an AI-powered security analysis tool that automatically detects vulnerabilities in code repositories. Built with React, TypeScript, and OpenAI's capabilities, it provides comprehensive security scanning with detailed reporting and actionable insights.
 
-**Use Lovable**
+## Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9ba29062-39fb-4d9d-a150-4dc29accb7fd) and start prompting.
+- **Static Code Analysis**: Scans code for hardcoded secrets and insecure patterns
+- **Dependency Scanning**: Checks for known vulnerabilities in dependencies
+- **Configuration Analysis**: Validates security settings in config files
+- **Pattern Matching**: Uses vector similarity to find known vulnerability patterns
+- **Web Search Enhancement**: Uses OpenAI's web search to find latest CVEs
+- **Historical Analysis**: Tracks security posture over time
+- **GitHub Issues Integration**: Creates issues for critical findings
+- **Email Reporting**: Sends detailed security reports via email
 
-Changes made via Lovable will be committed automatically to this repo.
+## Tech Stack
 
-**Use your preferred IDE**
+- React + TypeScript + Vite
+- Tailwind CSS for styling
+- shadcn/ui component library
+- OpenAI for intelligent analysis
+- Edge Functions for serverless backend
+- Local storage for result persistence
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Edge Function Details
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+The Security Scanner Edge Function provides the backend scanning capabilities:
 
-Follow these steps:
+### API Endpoints
 
+1. `/init-scan`: Initialize a vector store for a repository
+   ```
+   POST /init-scan
+   Body: { "repo": "owner/repo" }
+   Returns: { "vectorStoreId": "vs_..." }
+   ```
+
+2. `/scan-repo`: Run a full security scan
+   ```
+   POST /scan-repo
+   Body: { "repo": "owner/repo", "branch": "main" }
+   Returns: ScanResult object
+   ```
+
+3. `/scan-results`: Get historical scan results
+   ```
+   POST /scan-results
+   Body: { "repo": "owner/repo", "limit": 10 }
+   Returns: { "results": ScanResult[] }
+   ```
+
+4. `/create-issues`: Create GitHub issues for findings
+   ```
+   POST /create-issues
+   Body: { "repo": "owner/repo", "findings": SecurityFinding[] }
+   Returns: { "created": number, "issues": string[] }
+   ```
+
+5. `/cron-trigger`: Endpoint for GitHub Actions to trigger nightly scans
+   ```
+   POST /cron-trigger
+   Body: { "repo": "owner/repo", "branch": "main", "sendReport": true, "recipient": "user@example.com" }
+   Returns: { "scanId": "scan_...", "message": "Scan queued successfully" }
+   ```
+
+6. `/send-report`: Send a security report via email
+   ```
+   POST /send-report
+   Body: { "repo": "owner/repo", "recipient": "user@example.com", "includeRecommendations": true }
+   Returns: { "success": true, "message": "Report sent successfully" }
+   ```
+
+### Environment Variables
+
+- `OPENAI_API_KEY`: Required for OpenAI API access
+- `GITHUB_TOKEN`: GitHub API token for repository access and issue creation
+- `RESEND_API_KEY`: API key for the Resend email service
+
+## Development Approach
+
+This project was built using a multi-phase development approach with Roo Code Power Steering to optimize development costs and efficiency:
+
+### Multi-Phase Development 
+
+Instead of creating a single monolithic design document, the project is structured into phases:
+
+- **Guidance.md**: Defines coding standards, naming conventions, and best practices
+- **Phase1.md, Phase2.md, Phase3.md**: Breaks development into incremental, test-driven phases
+- **Tests.md**: Specifies unit and integration tests to validate each phase
+- **Implementation.md**: Tracks progress as features are completed
+
+### Roo Code Power Steering
+
+The project uses Gemini 2.0 Pro with Roo Code's Power Steering for efficient development:
+
+- **Cost Optimization**: Reduces token costs by 98.75% for input tokens and 99% for output tokens compared to other AI assistants
+- **Scalable Context**: Leverages Gemini Pro's 1M token context window (5x larger than alternatives)
+- **Test-Driven Development**: Each function is completed and tested before moving to the next
+- **Implementation Tracking**: Updates Implementation.md after each successful step
+- **Environment Variable Protection**: Ensures environment variables are never hardcoded
+
+## Local Development
+
+1. Clone the repository:
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+git clone <repository-url>
+cd agentic-security-scanner
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Install dependencies:
+```sh
+npm install
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Start the development server:
+```sh
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. Visit `http://localhost:8080` to see the application
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Testing
 
-**Use GitHub Codespaces**
+Run the test suite with:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```sh
+npm test
+```
 
-## What technologies are used for this project?
+For integration tests with the edge function:
 
-This project is built with .
+```sh
+npm run test:integration
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Deployment
 
-## How can I deploy this project?
+The application can be deployed to any static hosting provider:
 
-Simply open [Lovable](https://lovable.dev/projects/9ba29062-39fb-4d9d-a150-4dc29accb7fd) and click on Share -> Publish.
+```sh
+npm run build
+```
 
-## I want to use a custom domain - is that possible?
+Then deploy the contents of the `dist` directory.
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Supported by the [Agentics Foundation](https://agentics.org)
+- Powered by OpenAI and Gemini 2.0 Pro
+- Built with Roo Code Power Steering methodology
