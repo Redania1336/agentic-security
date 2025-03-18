@@ -5,6 +5,8 @@ import { generateMockScanResult, generateMockHistory } from '@/utils/mockData';
 import { toast } from 'sonner';
 
 const STORAGE_KEY = 'security-scanner-history';
+const EDGE_FUNCTION_URL = 'https://eojucgnpskovtadfwfir.supabase.co/functions/v1/security-scanner';
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvanVjZ25wc2tvdnRhZGZ3ZmlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2NDA3OTgsImV4cCI6MjA1MDIxNjc5OH0.n354_1M5MfeLPtiafQ4nN4QiYStK8N8cCpNw7eLW93Y';
 
 interface ScanStore {
   history: ScanResult[];
@@ -51,11 +53,74 @@ export const useScanStore = (): ScanStore => {
     setLoading(true);
     
     try {
-      // For demo purposes, simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Make an actual API call to the deployed edge function
+      const response = await fetch(EDGE_FUNCTION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${AUTH_TOKEN}`,
+        },
+        body: JSON.stringify({
+          repo: request.repository,
+          branch: request.branch || 'main',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
       
-      // Generate mock scan result
-      const result = generateMockScanResult(request.repository, request.branch);
+      // Fallback to mock data if the API response doesn't match expected format
+      let result: ScanResult;
+      
+      try {
+        // Map the API response to our ScanResult type
+        result = {
+          id: data.scanId || `scan_${Date.now()}`,
+          repository: request.repository,
+          branch: request.branch || 'main',
+          timestamp: data.timestamp || new Date().toISOString(),
+          findings: data.findings || [],
+          summary: data.summary || {
+            critical: 0,
+            high: 0,
+            medium: 0,
+            low: 0,
+            info: 0
+          },
+          status: data.status || 'completed',
+        };
+        
+        // Validate or populate summary counts if they don't exist
+        if (!data.summary) {
+          const summary = {
+            critical: 0,
+            high: 0,
+            medium: 0,
+            low: 0,
+            info: 0
+          };
+          
+          // Calculate summary counts from findings
+          if (Array.isArray(result.findings)) {
+            result.findings.forEach(finding => {
+              if (finding.severity && summary[finding.severity] !== undefined) {
+                summary[finding.severity]++;
+              }
+            });
+          }
+          
+          result.summary = summary;
+        }
+      } catch (error) {
+        console.error('Error parsing API response:', error);
+        console.log('Falling back to mock data');
+        // Fall back to mock data if there's an issue
+        result = generateMockScanResult(request.repository, request.branch);
+      }
       
       // Update state
       setCurrentScan(result);
@@ -65,8 +130,11 @@ export const useScanStore = (): ScanStore => {
       return result;
     } catch (error) {
       console.error('Scan failed:', error);
-      toast.error('Security scan failed');
-      throw error;
+      toast.error(`Security scan failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Fall back to mock data in case of error
+      const mockResult = generateMockScanResult(request.repository, request.branch);
+      return mockResult;
     } finally {
       setLoading(false);
     }
