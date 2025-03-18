@@ -11,6 +11,12 @@ export interface SecurityFinding {
   recommendation?: string;
   createdAt: string;
   resolvedAt?: string;
+  // Additional fields that might come from the edge function
+  category?: string;
+  score?: number;
+  lineNumber?: number;
+  file?: string;
+  line_number?: number;
 }
 
 export interface ScanResult {
@@ -27,6 +33,23 @@ export interface ScanResult {
     info: number;
   };
   status: 'completed' | 'failed' | 'in-progress';
+  // Extra fields that might come from the edge function
+  repo_name?: string;
+  scan_id?: string;
+  lastCommitSha?: string;
+  statistics?: {
+    files_scanned: number;
+    issues_by_severity: {
+      critical: number;
+      high: number;
+      medium: number;
+      low: number;
+    };
+    trends: {
+      first_scan: boolean;
+      comparison: any;
+    };
+  };
 }
 
 export interface ScanRequest {

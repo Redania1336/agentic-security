@@ -19,6 +19,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface ScanResultsProps {
   result: ScanResult;
@@ -28,6 +29,7 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
   // Track open accordion items with proper string array
   const [openItems, setOpenItems] = useState<string[]>([]);  
   const [rawJson, setRawJson] = useState<string>('');
+  const [normalizedFindings, setNormalizedFindings] = useState<SecurityFinding[]>([]);
   
   console.log("Rendering ScanResults with:", {
     findings: result.findings.length,
@@ -36,16 +38,59 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
     timestamp: result.timestamp
   });
 
+  // Normalize findings to ensure they have all required fields
+  useEffect(() => {
+    const normalized = result.findings.map((finding, index) => {
+      // Generate a stable ID if one doesn't exist
+      const id = finding.id || `finding-${index}-${Date.now()}`;
+      
+      // Generate title from category if it doesn't exist
+      let title = finding.title;
+      if (!title && (finding as any).category) {
+        title = `${(finding as any).category.charAt(0).toUpperCase() + (finding as any).category.slice(1)} issue`;
+        if ((finding as any).file) {
+          title += ` in ${(finding as any).file.split('/').pop()}`;
+        }
+      }
+      
+      // Map location from file property if it exists
+      const location = finding.location || (finding as any).file;
+      
+      // Convert edge function format to our app format
+      return {
+        id,
+        title: title || 'Security Issue',
+        description: finding.description,
+        severity: finding.severity,
+        codeSnippet: finding.codeSnippet || '',
+        location: location || '',
+        recommendation: finding.recommendation || '',
+        createdAt: finding.createdAt || result.timestamp,
+        resolvedAt: finding.resolvedAt,
+        ...(finding as any).score && { score: (finding as any).score },
+        ...(finding as any).line_number && { lineNumber: (finding as any).line_number },
+        ...(finding as any).category && { category: (finding as any).category }
+      };
+    });
+    
+    setNormalizedFindings(normalized);
+    console.log("Normalized findings:", normalized);
+  }, [result.findings, result.timestamp]);
+
   // Format and store the raw JSON data
   useEffect(() => {
     try {
       // Create a sanitized copy for display
       const sanitizedResult = JSON.parse(JSON.stringify(result));
-      setRawJson(JSON.stringify(sanitizedResult, null, 2));
+      const jsonString = JSON.stringify(sanitizedResult, null, 2);
+      setRawJson(jsonString);
       
       // Save to local storage
-      localStorage.setItem(`scan_result_${result.repository}`, JSON.stringify(sanitizedResult));
+      localStorage.setItem(`scan_result_${result.repository}`, jsonString);
       console.log("Scan result saved to local storage");
+      
+      // Save raw JSON to localStorage as well
+      localStorage.setItem(`scan_result_raw_${result.repository}`, jsonString);
     } catch (error) {
       console.error("Failed to process or save scan result:", error);
       // Fallback - just stringify the object directly
@@ -64,6 +109,13 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    toast.success("Scan results downloaded");
+  };
+
+  // Copy raw JSON to clipboard
+  const copyRawJson = () => {
+    navigator.clipboard.writeText(rawJson);
+    toast.success("Copied to clipboard");
   };
 
   const getSeverityIcon = (severity: SeverityLevel) => {
@@ -100,13 +152,13 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
     }
   };
 
-  const criticalFindings = result.findings.filter(f => f.severity === 'critical');
-  const highFindings = result.findings.filter(f => f.severity === 'high');
-  const mediumFindings = result.findings.filter(f => f.severity === 'medium');
-  const lowFindings = result.findings.filter(f => f.severity === 'low');
-  const infoFindings = result.findings.filter(f => f.severity === 'info');
+  const criticalFindings = normalizedFindings.filter(f => f.severity === 'critical');
+  const highFindings = normalizedFindings.filter(f => f.severity === 'high');
+  const mediumFindings = normalizedFindings.filter(f => f.severity === 'medium');
+  const lowFindings = normalizedFindings.filter(f => f.severity === 'low');
+  const infoFindings = normalizedFindings.filter(f => f.severity === 'info');
 
-  const hasFindings = result.findings.length > 0;
+  const hasFindings = normalizedFindings.length > 0;
 
   const renderFindingDetails = (finding: SecurityFinding) => (
     <div className="space-y-4">
@@ -116,6 +168,9 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
         <div>
           <p className="text-sm font-medium mb-1">Location</p>
           <code className="text-xs bg-muted px-2 py-1 rounded">{finding.location}</code>
+          {(finding as any).lineNumber && (
+            <span className="text-xs ml-2 text-muted-foreground">Line {(finding as any).lineNumber}</span>
+          )}
         </div>
       )}
       
@@ -123,6 +178,24 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
         <div>
           <p className="text-sm font-medium mb-1">Code Snippet</p>
           <pre className="text-xs bg-muted p-3 rounded overflow-x-auto">{finding.codeSnippet}</pre>
+        </div>
+      )}
+      
+      {(finding as any).category && (
+        <div>
+          <p className="text-sm font-medium mb-1">Category</p>
+          <Badge variant="outline" className="text-xs">
+            {(finding as any).category}
+          </Badge>
+        </div>
+      )}
+      
+      {(finding as any).score && (
+        <div>
+          <p className="text-sm font-medium mb-1">Risk Score</p>
+          <Badge variant="outline" className={`${getSeverityColor(finding.severity)}`}>
+            {(finding as any).score}/10
+          </Badge>
         </div>
       )}
       
@@ -139,7 +212,7 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
   );
 
   console.log("Finding groups:", {
-    all: result.findings.length,
+    all: normalizedFindings.length,
     critical: criticalFindings.length,
     high: highFindings.length,
     medium: mediumFindings.length,
@@ -187,7 +260,7 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
         <div className="inline-flex items-center justify-center rounded-full p-3 bg-primary-blue/10 text-primary-blue mb-4">
           <Shield className="h-8 w-8" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Scan Results</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Security Scan Results</h1>
         <p className="text-muted-foreground">
           Repository: <span className="font-medium text-foreground">{result.repository}</span>
         </p>
@@ -253,13 +326,13 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
           <CardHeader>
             <CardTitle>Security Findings</CardTitle>
             <CardDescription>
-              {result.findings.length} {result.findings.length === 1 ? 'issue' : 'issues'} found in {result.repository}
+              {normalizedFindings.length} {normalizedFindings.length === 1 ? 'issue' : 'issues'} found in {result.repository}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all" className="w-full">
               <TabsList className="grid grid-cols-7 mb-6">
-                <TabsTrigger value="all">All ({result.findings.length})</TabsTrigger>
+                <TabsTrigger value="all">All ({normalizedFindings.length})</TabsTrigger>
                 <TabsTrigger value="critical" disabled={criticalFindings.length === 0}>
                   Critical ({criticalFindings.length})
                 </TabsTrigger>
@@ -282,7 +355,7 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
               
               <TabsContent value="all" className="space-y-4">
                 <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-                  {renderFindingItems(result.findings)}
+                  {renderFindingItems(normalizedFindings)}
                 </Accordion>
               </TabsContent>
               
@@ -327,8 +400,13 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
                   <CardContent>
                     <pre className="bg-muted p-4 rounded-md overflow-auto max-h-[400px] text-xs">{rawJson}</pre>
                   </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" size="sm" onClick={downloadRawJson}><Download className="h-4 w-4 mr-2" /> Download JSON</Button>
+                  <CardFooter className="flex gap-3">
+                    <Button variant="outline" size="sm" onClick={downloadRawJson}>
+                      <Download className="h-4 w-4 mr-2" /> Download JSON
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={copyRawJson}>
+                      <Code className="h-4 w-4 mr-2" /> Copy to Clipboard
+                    </Button>
                   </CardFooter>
                 </Card>
               </TabsContent>
@@ -349,3 +427,4 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
     </div>
   );
 };
+

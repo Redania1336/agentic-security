@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ScanResult, ScanRequest } from '@/types/scanner';
 import { generateMockScanResult, generateMockHistory } from '@/utils/mockData';
@@ -145,17 +146,28 @@ export const useScanStore = (): ScanStore => {
       const data = await response.json();
       console.log('API response received:', data);
       
-      // Fallback to mock data if the API response doesn't match expected format
+      // Map the API response to our ScanResult type
       let result: ScanResult;
       
       try {
-        // Map the API response to our ScanResult type
+        // Normalize the response whether it comes from the mock data or edge function
+        const findingsArray = Array.isArray(data.findings) ? data.findings : [];
+        
+        // Generate IDs for findings if they don't exist
+        const processedFindings = findingsArray.map((finding, index) => {
+          return {
+            ...finding,
+            id: finding.id || `finding-${index}-${Date.now()}`
+          };
+        });
+        
+        // Create the proper scan result object
         result = {
-          id: data.scanId || `scan_${Date.now()}`,
-          repository: request.repository,
+          id: data.scan_id || data.scanId || `scan_${Date.now()}`,
+          repository: data.repo_name || request.repository,
           branch: request.branch || 'main',
           timestamp: data.timestamp || new Date().toISOString(),
-          findings: data.findings || [],
+          findings: processedFindings,
           summary: data.summary || {
             critical: 0,
             high: 0,
@@ -165,6 +177,16 @@ export const useScanStore = (): ScanStore => {
           },
           status: data.status || 'completed',
         };
+        
+        // If the API response includes statistics, add them to the result
+        if (data.statistics) {
+          result.statistics = data.statistics;
+        }
+        
+        // If the API response includes lastCommitSha, add it to the result
+        if (data.lastCommitSha) {
+          result.lastCommitSha = data.lastCommitSha;
+        }
         
         // Validate or populate summary counts if they don't exist
         if (!data.summary) {
@@ -177,18 +199,19 @@ export const useScanStore = (): ScanStore => {
           };
           
           // Calculate summary counts from findings
-          if (Array.isArray(result.findings)) {
-            result.findings.forEach(finding => {
-              if (finding.severity && summary[finding.severity] !== undefined) {
-                summary[finding.severity]++;
-              }
-            });
-          }
+          processedFindings.forEach(finding => {
+            if (finding.severity && summary[finding.severity] !== undefined) {
+              summary[finding.severity]++;
+            }
+          });
           
           result.summary = summary;
         }
+        
+        // Save raw response to localStorage for debugging
+        localStorage.setItem(`scan_result_raw_${request.repository}`, JSON.stringify(data));
       } catch (error) {
-        console.error('Error parsing API response:', error);
+        console.error('Error processing API response:', error);
         console.log('Falling back to mock data');
         // Fall back to mock data if there's an issue
         result = generateMockScanResult(request.repository, request.branch);
