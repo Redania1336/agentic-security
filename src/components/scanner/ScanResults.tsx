@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ScanResult, SecurityFinding, SeverityLevel } from '@/types/scanner';
 import { AlertCircle, AlertTriangle, Info, Shield, CheckCircle } from 'lucide-react';
@@ -67,7 +66,6 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
     }
   };
 
-  // Filter findings by severity
   const criticalFindings = result.findings.filter(f => f.severity === 'critical');
   const highFindings = result.findings.filter(f => f.severity === 'high');
   const mediumFindings = result.findings.filter(f => f.severity === 'medium');
@@ -76,7 +74,6 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
 
   const hasFindings = result.findings.length > 0;
 
-  // Render finding details content
   const renderFindingDetails = (finding: SecurityFinding) => (
     <div className="space-y-4">
       <p className="text-muted-foreground">{finding.description}</p>
@@ -106,8 +103,7 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
       )}
     </div>
   );
-  
-  // Function to render an accordion item
+
   const renderAccordionItem = (finding: SecurityFinding) => (
     <AccordionItem key={finding.id} value={finding.id} className="neo-blur mb-4 rounded-lg overflow-hidden">
       <AccordionTrigger className="px-4 py-3 hover:no-underline">
@@ -217,37 +213,37 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
           
           <TabsContent value="all" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {result.findings.map(renderAccordionItem)}
+              {result.findings.map(finding => renderAccordionItem(finding))}
             </Accordion>
           </TabsContent>
           
           <TabsContent value="critical" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {criticalFindings.map(renderAccordionItem)}
+              {criticalFindings.map(finding => renderAccordionItem(finding))}
             </Accordion>
           </TabsContent>
           
           <TabsContent value="high" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {highFindings.map(renderAccordionItem)}
+              {highFindings.map(finding => renderAccordionItem(finding))}
             </Accordion>
           </TabsContent>
           
           <TabsContent value="medium" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {mediumFindings.map(renderAccordionItem)}
+              {mediumFindings.map(finding => renderAccordionItem(finding))}
             </Accordion>
           </TabsContent>
           
           <TabsContent value="low" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {lowFindings.map(renderAccordionItem)}
+              {lowFindings.map(finding => renderAccordionItem(finding))}
             </Accordion>
           </TabsContent>
           
           <TabsContent value="info" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {infoFindings.map(renderAccordionItem)}
+              {infoFindings.map(finding => renderAccordionItem(finding))}
             </Accordion>
           </TabsContent>
         </Tabs>
