@@ -2,11 +2,28 @@
 import { useState } from 'react';
 import { useScanStore } from '@/hooks/useScanStore';
 import { ScanResult } from '@/types/scanner';
-import { Shield, AlertCircle, Info, ArrowRight } from 'lucide-react';
+import { Shield, AlertCircle, Info, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScanResults } from './ScanResults';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { Textarea } from '@/components/ui/textarea';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+interface AdvancedScanOptions {
+  useWebSearch: boolean;
+  sendReport: boolean;
+  recipientEmail: string;
+  createIssues: boolean;
+  includeRecommendations: boolean;
+  customDepth: string;
+  customFileTypes: string;
+  scanHistory: boolean;
+}
 
 export const ScannerForm = () => {
   const { runScan, loading, currentScan } = useScanStore();
@@ -14,6 +31,17 @@ export const ScannerForm = () => {
   const [branch, setBranch] = useState('main');
   const [result, setResult] = useState<ScanResult | null>(null);
   const [formComplete, setFormComplete] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [advancedOptions, setAdvancedOptions] = useState<AdvancedScanOptions>({
+    useWebSearch: false,
+    sendReport: false,
+    recipientEmail: '',
+    createIssues: false,
+    includeRecommendations: true,
+    customDepth: '3',
+    customFileTypes: 'js,ts,py,rb,go,java,php',
+    scanHistory: false
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +49,20 @@ export const ScannerForm = () => {
     if (!repository) return;
     
     try {
-      const scanResult = await runScan({ repository, branch });
+      // Include advanced options in the scan request
+      const scanResult = await runScan({ 
+        repository, 
+        branch,
+        useWebSearch: advancedOptions.useWebSearch,
+        sendReport: advancedOptions.sendReport && advancedOptions.recipientEmail ? true : false,
+        recipient: advancedOptions.recipientEmail,
+        createIssues: advancedOptions.createIssues,
+        includeRecommendations: advancedOptions.includeRecommendations,
+        scanDepth: parseInt(advancedOptions.customDepth) || 3,
+        fileTypes: advancedOptions.customFileTypes.split(',').map(t => t.trim()),
+        scanHistory: advancedOptions.scanHistory
+      });
+      
       setResult(scanResult);
       setFormComplete(true);
     } catch (error) {
@@ -32,6 +73,13 @@ export const ScannerForm = () => {
   const resetForm = () => {
     setFormComplete(false);
     setResult(null);
+  };
+
+  const handleAdvancedOptionChange = (field: keyof AdvancedScanOptions, value: any) => {
+    setAdvancedOptions(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   if (formComplete && result) {
@@ -97,6 +145,175 @@ export const ScannerForm = () => {
                 className="transition-all duration-300 focus-visible:ring-primary-blue"
               />
             </div>
+            
+            <Collapsible
+              open={showAdvanced}
+              onOpenChange={setShowAdvanced}
+              className="w-full border rounded-md p-2"
+            >
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="flex w-full justify-between p-2">
+                  <span>Advanced Options</span>
+                  {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="useWebSearch"
+                      checked={advancedOptions.useWebSearch}
+                      onCheckedChange={(checked) => 
+                        handleAdvancedOptionChange('useWebSearch', Boolean(checked))
+                      }
+                    />
+                    <div className="grid gap-1.5">
+                      <label
+                        htmlFor="useWebSearch"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Use Web Search
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Enhance scan with latest CVEs from the web
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="createIssues"
+                      checked={advancedOptions.createIssues}
+                      onCheckedChange={(checked) => 
+                        handleAdvancedOptionChange('createIssues', Boolean(checked))
+                      }
+                    />
+                    <div className="grid gap-1.5">
+                      <label
+                        htmlFor="createIssues"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Create GitHub Issues
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Automatically create issues for critical findings
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="scanHistory"
+                      checked={advancedOptions.scanHistory}
+                      onCheckedChange={(checked) => 
+                        handleAdvancedOptionChange('scanHistory', Boolean(checked))
+                      }
+                    />
+                    <div className="grid gap-1.5">
+                      <label
+                        htmlFor="scanHistory"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Historical Analysis
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Compare with previous scans
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="includeRecommendations"
+                      checked={advancedOptions.includeRecommendations}
+                      onCheckedChange={(checked) => 
+                        handleAdvancedOptionChange('includeRecommendations', Boolean(checked))
+                      }
+                    />
+                    <div className="grid gap-1.5">
+                      <label
+                        htmlFor="includeRecommendations"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Include Recommendations
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Add fix recommendations to findings
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="customDepth" className="text-sm font-medium">
+                      Scan Depth
+                    </label>
+                    <Input
+                      id="customDepth"
+                      type="number"
+                      min="1"
+                      max="10"
+                      placeholder="3"
+                      value={advancedOptions.customDepth}
+                      onChange={(e) => handleAdvancedOptionChange('customDepth', e.target.value)}
+                      className="transition-all duration-300"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="customFileTypes" className="text-sm font-medium">
+                      File Types
+                    </label>
+                    <Input
+                      id="customFileTypes"
+                      placeholder="js,ts,py,rb,go,java,php"
+                      value={advancedOptions.customFileTypes}
+                      onChange={(e) => handleAdvancedOptionChange('customFileTypes', e.target.value)}
+                      className="transition-all duration-300"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="sendReport"
+                      checked={advancedOptions.sendReport}
+                      onCheckedChange={(checked) => 
+                        handleAdvancedOptionChange('sendReport', Boolean(checked))
+                      }
+                    />
+                    <div className="grid gap-1.5">
+                      <label
+                        htmlFor="sendReport"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Send Email Report
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Send a detailed security report via email
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {advancedOptions.sendReport && (
+                    <div className="mt-2">
+                      <Input
+                        id="recipientEmail"
+                        type="email"
+                        placeholder="recipient@example.com"
+                        value={advancedOptions.recipientEmail}
+                        onChange={(e) => handleAdvancedOptionChange('recipientEmail', e.target.value)}
+                        className="transition-all duration-300"
+                      />
+                    </div>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
             
             <Button 
               type="submit" 

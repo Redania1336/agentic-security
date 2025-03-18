@@ -32,4 +32,12 @@ export interface ScanResult {
 export interface ScanRequest {
   repository: string;
   branch?: string;
+  useWebSearch?: boolean;
+  sendReport?: boolean;
+  recipient?: string;
+  createIssues?: boolean;
+  includeRecommendations?: boolean;
+  scanDepth?: number;
+  fileTypes?: string[];
+  scanHistory?: boolean;
 }

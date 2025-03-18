@@ -53,6 +53,25 @@ export const useScanStore = (): ScanStore => {
     setLoading(true);
     
     try {
+      // Prepare request payload with advanced options
+      const payload = {
+        repo: request.repository,
+        branch: request.branch || 'main',
+        // Include advanced options if provided
+        ...(request.useWebSearch !== undefined && { useWebSearch: request.useWebSearch }),
+        ...(request.sendReport && request.recipient && { 
+          sendReport: true,
+          recipient: request.recipient
+        }),
+        ...(request.createIssues !== undefined && { createIssues: request.createIssues }),
+        ...(request.includeRecommendations !== undefined && { 
+          includeRecommendations: request.includeRecommendations 
+        }),
+        ...(request.scanDepth && { scanDepth: request.scanDepth }),
+        ...(request.fileTypes && { fileTypes: request.fileTypes }),
+        ...(request.scanHistory && { scanHistory: request.scanHistory })
+      };
+      
       // Make an actual API call to the deployed edge function
       const response = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
@@ -60,10 +79,7 @@ export const useScanStore = (): ScanStore => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${AUTH_TOKEN}`,
         },
-        body: JSON.stringify({
-          repo: request.repository,
-          branch: request.branch || 'main',
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -120,6 +136,16 @@ export const useScanStore = (): ScanStore => {
         console.log('Falling back to mock data');
         // Fall back to mock data if there's an issue
         result = generateMockScanResult(request.repository, request.branch);
+      }
+      
+      // Special handling for email reports
+      if (request.sendReport && request.recipient && data.reportSent) {
+        toast.success(`Security report sent to ${request.recipient}`);
+      }
+      
+      // Special handling for GitHub issues
+      if (request.createIssues && data.issuesCreated) {
+        toast.success(`Created ${data.issuesCreated} GitHub issues for critical findings`);
       }
       
       // Update state
