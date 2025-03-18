@@ -25,6 +25,21 @@ The Agentic Security Scanner is an AI-powered security analysis tool that automa
 - Edge Functions for serverless backend
 - Local storage for result persistence
 
+## Development Plans
+
+The project follows a structured multi-phase development approach:
+
+| Plan | Description |
+|------|-------------|
+| [Guidance](./src/plans/Guidance.md) | Coding standards, best practices, and project organization principles |
+| [Phase 1](./src/plans/Phase1.md) | Core Security Scanner Setup - basic structure and functionality |
+| [Phase 2](./src/plans/Phase2.md) | Advanced Features and Edge Function Integration |
+| [Phase 3](./src/plans/Phase3.md) | GitHub Integration and Automation features |
+| [Tests](./src/plans/Tests.md) | Complete testing strategy and specifications |
+| [Implementation Progress](./src/plans/Implementation.md) | Current development status and completed features |
+| [SEO Optimization](./src/plans/SEO.md) | Search engine optimization strategy |
+| [Plans Overview](./src/plans/README.md) | Summary of all planning documents |
+
 ## Edge Function Details
 
 The Security Scanner Edge Function provides the backend scanning capabilities:
