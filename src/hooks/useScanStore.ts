@@ -5,7 +5,7 @@ import { generateMockScanResult, generateMockHistory } from '@/utils/mockData';
 import { toast } from 'sonner';
 
 const STORAGE_KEY = 'security-scanner-history';
-const EDGE_FUNCTION_URL = 'https://eojucgnpskovtadfwfir.supabase.co/functions/v1/security-scanner';
+const EDGE_FUNCTION_BASE_URL = 'https://eojucgnpskovtadfwfir.supabase.co/functions/v1/security-scanner';
 const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvanVjZ25wc2tvdnRhZGZ3ZmlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2NDA3OTgsImV4cCI6MjA1MDIxNjc5OH0.n354_1M5MfeLPtiafQ4nN4QiYStK8N8cCpNw7eLW93Y';
 
 interface ScanStore {
@@ -72,8 +72,12 @@ export const useScanStore = (): ScanStore => {
         ...(request.scanHistory && { scanHistory: request.scanHistory })
       };
       
+      // Use the correct endpoint URL with the scan-repo route
+      const endpoint = `${EDGE_FUNCTION_BASE_URL}/scan-repo`;
+      console.log('Calling security scanner API:', endpoint);
+      
       // Make an actual API call to the deployed edge function
-      const response = await fetch(EDGE_FUNCTION_URL, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

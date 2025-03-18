@@ -1,6 +1,7 @@
 
 import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useScanStore } from '@/hooks/useScanStore';
 import { AppShell } from '@/components/layout/AppShell';
 import { ScannerForm } from '@/components/scanner/ScannerForm';
 import { ScanResults } from '@/components/scanner/ScanResults';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 
 const Scanner = () => {
   const location = useLocation();
+  const { currentScan } = useScanStore();
   const [result, setResult] = useState<ScanResult | null>(null);
   const [showForm, setShowForm] = useState(true);
 
@@ -17,8 +19,11 @@ const Scanner = () => {
     if (location.state?.result) {
       setResult(location.state.result);
       setShowForm(false);
+    } else if (currentScan) {
+      setResult(currentScan);
+      setShowForm(false);
     }
-  }, [location.state]);
+  }, [location.state, currentScan]);
 
   const handleNewScan = () => {
     setResult(null);
