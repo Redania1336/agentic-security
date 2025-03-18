@@ -5,6 +5,8 @@
 
 The Agentic Security Scanner is an AI-powered security analysis tool that automatically detects vulnerabilities in code repositories. Built with React, TypeScript, and OpenAI's capabilities, it provides comprehensive security scanning with detailed reporting and actionable insights.
 
+**Live Demo:** [https://security.agentics.org/](https://security.agentics.org/)
+
 ## Features
 
 - **Static Code Analysis**: Scans code for hardcoded secrets and insecure patterns
