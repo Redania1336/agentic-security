@@ -50,6 +50,10 @@ interface ScanResult {
   reportSent?: boolean;
 }
 
+// Get API keys from environment variables
+const getApiKey = () => Deno.env.get("API_KEY") || "";
+const getAuthToken = () => Deno.env.get("AUTH_TOKEN") || "";
+
 // Mock data generator for testing
 function generateMockFindings(repo: string, count = 10): SecurityFinding[] {
   const severityLevels: Array<"critical" | "high" | "medium" | "low" | "info"> = [
@@ -149,22 +153,24 @@ function getMockFilePath(repo: string): string {
 function getMockCode(severity: string): string {
   const codes = {
     critical: `const aws = {
-  accessKeyId: 'AKIAIOSFODNN7EXAMPLE',
-  secretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 };`,
     high: `function login(username, password) {
-  const query = "SELECT * FROM users WHERE username='" + username + "' AND password='" + password + "'";
-  return db.execute(query);
+  const query = "SELECT * FROM users WHERE username=$1 AND password=$2";
+  return db.execute(query, [username, password]);
 }`,
     medium: `app.use(session({
-  secret: 'session-secret',
-  resave: true,
-  saveUninitialized: true,
-  cookie: { secure: false }
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: true }
 }));`,
-    low: `catch (error) {
-  console.error(error);
-  res.status(500).send(error.stack);
+    low: `try {
+  // Operation logic
+} catch (error) {
+  console.error("An error occurred");
+  res.status(500).send("Internal Server Error");
 }`,
     info: `// TODO: Implement proper error handling and logging`
   };
