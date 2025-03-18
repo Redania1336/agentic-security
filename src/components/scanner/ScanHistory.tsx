@@ -6,10 +6,18 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
 
 export const ScanHistory = () => {
   const { history, deleteResult, clearHistory } = useScanStore();
   const navigate = useNavigate();
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  // Add effect to ensure component shows loading state until history is loaded
+  useEffect(() => {
+    console.log('ScanHistory component mounted, history length:', history.length);
+    setIsLoaded(true);
+  }, []);
   
   const handleClearHistory = () => {
     clearHistory();
@@ -38,6 +46,18 @@ export const ScanHistory = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  // Show loading state until history is loaded
+  if (!isLoaded) {
+    return (
+      <div className="max-w-2xl mx-auto text-center space-y-6 py-12">
+        <div className="inline-flex items-center justify-center rounded-full p-3 bg-primary-blue/10 text-primary-blue animate-pulse">
+          <Calendar className="h-8 w-8" />
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight">Loading History...</h1>
+      </div>
+    );
+  }
+
   if (history.length === 0) {
     return (
       <div className="max-w-2xl mx-auto text-center space-y-6 py-12">
@@ -58,6 +78,8 @@ export const ScanHistory = () => {
       </div>
     );
   }
+
+  console.log('Rendering scan history items:', history.length);
 
   return (
     <div className="space-y-8 animate-fade-in">

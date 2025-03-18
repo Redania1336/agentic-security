@@ -22,17 +22,21 @@ export const useScanStore = (): ScanStore => {
   const [loading, setLoading] = useState<boolean>(false);
   const [currentScan, setCurrentScan] = useState<ScanResult | null>(null);
 
-  // Load history from local storage
+  // Load history from local storage on initial mount only
   useEffect(() => {
+    console.log('Loading scan history from localStorage');
     try {
       const storedHistory = localStorage.getItem(STORAGE_KEY);
       if (storedHistory) {
-        setHistory(JSON.parse(storedHistory));
+        const parsedHistory = JSON.parse(storedHistory);
+        console.log('Found stored history:', parsedHistory.length, 'items');
+        setHistory(parsedHistory);
       } else {
+        console.log('No stored history found, initializing with mock data');
         // For demo purposes, initialize with mock data
         const mockHistory = generateMockHistory(3);
         setHistory(mockHistory);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(mockHistory));
+        saveHistoryToStorage(mockHistory);
       }
     } catch (error) {
       console.error('Failed to load scan history:', error);
@@ -40,18 +44,20 @@ export const useScanStore = (): ScanStore => {
     }
   }, []);
 
-  // Save history to local storage whenever it changes
-  useEffect(() => {
+  // Helper function to save history to localStorage
+  const saveHistoryToStorage = (historyData: ScanResult[]) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+      console.log('Saving history to localStorage:', historyData.length, 'items');
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(historyData));
     } catch (error) {
-      console.error('Failed to save scan history:', error);
+      console.error('Failed to save scan history to localStorage:', error);
     }
-  }, [history]);
+  };
 
   const runScan = async (request: ScanRequest): Promise<ScanResult> => {
     setLoading(true);
     console.log('Scan started, loading state:', true);
+    console.log('Scan request params:', request);
     
     try {
       // Prepare request payload with advanced options
@@ -93,6 +99,7 @@ export const useScanStore = (): ScanStore => {
       }
 
       const data = await response.json();
+      console.log('API response received:', data);
       
       // Fallback to mock data if the API response doesn't match expected format
       let result: ScanResult;
@@ -153,9 +160,17 @@ export const useScanStore = (): ScanStore => {
         toast.success(`Created ${data.issuesCreated} GitHub issues for critical findings`);
       }
       
-      // Update state
+      // Update state and store in localStorage
       setCurrentScan(result);
-      setHistory(prev => [result, ...prev]);
+      
+      // Update history with the new scan at the beginning
+      const updatedHistory = [result, ...history];
+      setHistory(updatedHistory);
+      
+      // Save to localStorage immediately after updating state
+      saveHistoryToStorage(updatedHistory);
+      
+      console.log('Scan completed successfully, history updated:', updatedHistory.length, 'items');
       toast.success('Security scan completed');
       
       return result;
@@ -173,13 +188,20 @@ export const useScanStore = (): ScanStore => {
   };
 
   const clearHistory = () => {
+    console.log('Clearing scan history');
     setHistory([]);
     localStorage.removeItem(STORAGE_KEY);
     toast.success('Scan history cleared');
   };
 
   const deleteResult = (id: string) => {
-    setHistory(prev => prev.filter(result => result.id !== id));
+    console.log('Deleting scan result with ID:', id);
+    const updatedHistory = history.filter(result => result.id !== id);
+    setHistory(updatedHistory);
+    
+    // Save the updated history to localStorage
+    saveHistoryToStorage(updatedHistory);
+    
     if (currentScan?.id === id) {
       setCurrentScan(null);
     }
