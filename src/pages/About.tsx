@@ -83,6 +83,35 @@ const About = () => {
         </div>
 
         <div className="space-y-8 mb-16">
+          <h2 className="text-2xl font-bold tracking-tight">Open Source Project</h2>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+                <div className="bg-primary-blue/10 rounded-full p-6">
+                  <Github className="h-12 w-12 text-primary-blue" />
+                </div>
+                <div className="space-y-4 flex-1">
+                  <p>
+                    Agentic Security Scanner is an open-source project, freely available on GitHub. We welcome contributions from the community to help improve and expand the tool's capabilities.
+                  </p>
+                  <p>
+                    Visit our GitHub repository to see the source code, report issues, or contribute to the development.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2" 
+                    onClick={() => window.open('https://github.com/agenticsorg/agentic-security', '_blank')}
+                  >
+                    <Github className="h-4 w-4" /> View on GitHub
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-8 mb-16">
           <h2 className="text-2xl font-bold tracking-tight">Created By</h2>
           <Card>
             <CardContent className="pt-6">

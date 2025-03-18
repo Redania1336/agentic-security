@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Navbar } from './Navbar';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface AppShellProps {
@@ -60,11 +60,22 @@ export const AppShell = ({ children }: AppShellProps) => {
             <p>&copy; {new Date().getFullYear()} Agentic Security Scanner</p>
             <p className="text-xs">Supported by the <a href="https://agentics.org" target="_blank" rel="noopener noreferrer" className="text-primary-blue hover:underline">Agentics Foundation</a></p>
           </div>
-          <nav className="flex gap-4">
-            <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-            <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-            <a href="/about" className="hover:text-foreground transition-colors">About</a>
-          </nav>
+          <div className="flex items-center gap-4">
+            <a 
+              href="https://github.com/agenticsorg/agentic-security" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="GitHub Repository"
+            >
+              <Github className="h-5 w-5" />
+            </a>
+            <nav className="flex gap-4">
+              <a href="#" className="hover:text-foreground transition-colors">Terms</a>
+              <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
+              <a href="/about" className="hover:text-foreground transition-colors">About</a>
+            </nav>
+          </div>
         </div>
       </footer>
     </div>
