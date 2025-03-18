@@ -31,7 +31,8 @@ interface ScannerFormProps {
 
 export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
   const { runScan, loading, currentScan } = useScanStore();
-  const [repository, setRepository] = useState('');
+  // Use "agenticsorg/agentic-security" as the default repository
+  const [repository, setRepository] = useState('agenticsorg/agentic-security');
   const [branch, setBranch] = useState('main');
   const [result, setResult] = useState<ScanResult | null>(null);
   const [formComplete, setFormComplete] = useState(false);
@@ -58,6 +59,12 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
     }
     
     try {
+      console.log("Starting scan with parameters:", {
+        repository,
+        branch,
+        advanced: advancedOptions
+      });
+      
       // Include advanced options in the scan request
       const scanResult = await runScan({ 
         repository, 
@@ -71,6 +78,10 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
         fileTypes: advancedOptions.customFileTypes.split(',').map(t => t.trim()),
         scanHistory: advancedOptions.scanHistory
       });
+      
+      console.log("Scan completed successfully. Results:", scanResult);
+      console.log("Findings count:", scanResult.findings.length);
+      console.log("Summary:", scanResult.summary);
       
       setResult(scanResult);
       setFormComplete(true);

@@ -24,6 +24,13 @@ interface ScanResultsProps {
 
 export const ScanResults = ({ result }: ScanResultsProps) => {
   const [openItems, setOpenItems] = useState<string[]>([]);
+  
+  console.log("Rendering ScanResults with:", {
+    findings: result.findings.length,
+    summary: result.summary,
+    repository: result.repository,
+    timestamp: result.timestamp
+  });
 
   const toggleAccordionItem = (itemId: string) => {
     setOpenItems(prev => 
@@ -105,7 +112,41 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
     </div>
   );
 
-  // Remove the function that returns JSX and directly render the findings
+  console.log("Finding groups:", {
+    all: result.findings.length,
+    critical: criticalFindings.length,
+    high: highFindings.length,
+    medium: mediumFindings.length,
+    low: lowFindings.length,
+    info: infoFindings.length
+  });
+
+  // Render each finding as an AccordionItem with a proper unique key
+  const renderFindingItems = (findings: SecurityFinding[]) => {
+    return findings.map((finding) => (
+      <AccordionItem 
+        key={`finding-${finding.id}`} 
+        value={finding.id} 
+        className="neo-blur mb-4 rounded-lg overflow-hidden"
+      >
+        <AccordionTrigger className="px-4 py-3 hover:no-underline">
+          <div className="flex items-center gap-3 text-left">
+            {getSeverityIcon(finding.severity)}
+            <div>
+              <h3 className="font-medium">{finding.title}</h3>
+              <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
+                {finding.severity}
+              </Badge>
+            </div>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="px-4 pb-4">
+          {renderFindingDetails(finding)}
+        </AccordionContent>
+      </AccordionItem>
+    ));
+  };
+
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -196,139 +237,37 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
           
           <TabsContent value="all" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {result.findings.map((finding) => (
-                <AccordionItem key={finding.id} value={finding.id} className="neo-blur mb-4 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                    <div className="flex items-center gap-3 text-left">
-                      {getSeverityIcon(finding.severity)}
-                      <div>
-                        <h3 className="font-medium">{finding.title}</h3>
-                        <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
-                          {finding.severity}
-                        </Badge>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    {renderFindingDetails(finding)}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+              {renderFindingItems(result.findings)}
             </Accordion>
           </TabsContent>
           
           <TabsContent value="critical" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {criticalFindings.map((finding) => (
-                <AccordionItem key={finding.id} value={finding.id} className="neo-blur mb-4 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                    <div className="flex items-center gap-3 text-left">
-                      {getSeverityIcon(finding.severity)}
-                      <div>
-                        <h3 className="font-medium">{finding.title}</h3>
-                        <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
-                          {finding.severity}
-                        </Badge>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    {renderFindingDetails(finding)}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+              {renderFindingItems(criticalFindings)}
             </Accordion>
           </TabsContent>
           
           <TabsContent value="high" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {highFindings.map((finding) => (
-                <AccordionItem key={finding.id} value={finding.id} className="neo-blur mb-4 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                    <div className="flex items-center gap-3 text-left">
-                      {getSeverityIcon(finding.severity)}
-                      <div>
-                        <h3 className="font-medium">{finding.title}</h3>
-                        <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
-                          {finding.severity}
-                        </Badge>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    {renderFindingDetails(finding)}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+              {renderFindingItems(highFindings)}
             </Accordion>
           </TabsContent>
           
           <TabsContent value="medium" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {mediumFindings.map((finding) => (
-                <AccordionItem key={finding.id} value={finding.id} className="neo-blur mb-4 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                    <div className="flex items-center gap-3 text-left">
-                      {getSeverityIcon(finding.severity)}
-                      <div>
-                        <h3 className="font-medium">{finding.title}</h3>
-                        <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
-                          {finding.severity}
-                        </Badge>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    {renderFindingDetails(finding)}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+              {renderFindingItems(mediumFindings)}
             </Accordion>
           </TabsContent>
           
           <TabsContent value="low" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {lowFindings.map((finding) => (
-                <AccordionItem key={finding.id} value={finding.id} className="neo-blur mb-4 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                    <div className="flex items-center gap-3 text-left">
-                      {getSeverityIcon(finding.severity)}
-                      <div>
-                        <h3 className="font-medium">{finding.title}</h3>
-                        <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
-                          {finding.severity}
-                        </Badge>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    {renderFindingDetails(finding)}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+              {renderFindingItems(lowFindings)}
             </Accordion>
           </TabsContent>
           
           <TabsContent value="info" className="space-y-4">
             <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {infoFindings.map((finding) => (
-                <AccordionItem key={finding.id} value={finding.id} className="neo-blur mb-4 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                    <div className="flex items-center gap-3 text-left">
-                      {getSeverityIcon(finding.severity)}
-                      <div>
-                        <h3 className="font-medium">{finding.title}</h3>
-                        <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
-                          {finding.severity}
-                        </Badge>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    {renderFindingDetails(finding)}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+              {renderFindingItems(infoFindings)}
             </Accordion>
           </TabsContent>
         </Tabs>
