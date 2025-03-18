@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { ScanResult, SecurityFinding, SeverityLevel } from '@/types/scanner';
-import { AlertCircle, AlertTriangle, Info, Shield, CheckCircle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, Shield, CheckCircle, FileText } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
@@ -23,6 +23,7 @@ interface ScanResultsProps {
 }
 
 export const ScanResults = ({ result }: ScanResultsProps) => {
+  // Track open accordion items with proper string array
   const [openItems, setOpenItems] = useState<string[]>([]);
   
   console.log("Rendering ScanResults with:", {
@@ -31,14 +32,6 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
     repository: result.repository,
     timestamp: result.timestamp
   });
-
-  const toggleAccordionItem = (itemId: string) => {
-    setOpenItems(prev => 
-      prev.includes(itemId) 
-        ? prev.filter(id => id !== itemId) 
-        : [...prev, itemId]
-    );
-  };
 
   const getSeverityIcon = (severity: SeverityLevel) => {
     switch (severity) {
@@ -121,22 +114,30 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
     info: infoFindings.length
   });
 
-  // Render each finding as an AccordionItem with a proper unique key
+  // Render each finding as an AccordionItem with proper title
   const renderFindingItems = (findings: SecurityFinding[]) => {
     return findings.map((finding) => (
       <AccordionItem 
         key={`finding-${finding.id}`} 
         value={finding.id} 
-        className="neo-blur mb-4 rounded-lg overflow-hidden"
+        className="neo-blur mb-4 rounded-lg overflow-hidden border"
       >
         <AccordionTrigger className="px-4 py-3 hover:no-underline">
           <div className="flex items-center gap-3 text-left">
             {getSeverityIcon(finding.severity)}
             <div>
               <h3 className="font-medium">{finding.title}</h3>
-              <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
-                {finding.severity}
-              </Badge>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="outline" className={`${getSeverityColor(finding.severity)}`}>
+                  {finding.severity}
+                </Badge>
+                {finding.location && (
+                  <span className="text-xs text-muted-foreground truncate max-w-[300px]">
+                    <FileText className="inline h-3 w-3 mr-1" />
+                    {finding.location.split('/').pop()}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </AccordionTrigger>
@@ -215,62 +216,72 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
       </div>
 
       {hasFindings ? (
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid grid-cols-6 mb-6">
-            <TabsTrigger value="all">All ({result.findings.length})</TabsTrigger>
-            <TabsTrigger value="critical" disabled={criticalFindings.length === 0}>
-              Critical ({criticalFindings.length})
-            </TabsTrigger>
-            <TabsTrigger value="high" disabled={highFindings.length === 0}>
-              High ({highFindings.length})
-            </TabsTrigger>
-            <TabsTrigger value="medium" disabled={mediumFindings.length === 0}>
-              Medium ({mediumFindings.length})
-            </TabsTrigger>
-            <TabsTrigger value="low" disabled={lowFindings.length === 0}>
-              Low ({lowFindings.length})
-            </TabsTrigger>
-            <TabsTrigger value="info" disabled={infoFindings.length === 0}>
-              Info ({infoFindings.length})
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="all" className="space-y-4">
-            <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {renderFindingItems(result.findings)}
-            </Accordion>
-          </TabsContent>
-          
-          <TabsContent value="critical" className="space-y-4">
-            <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {renderFindingItems(criticalFindings)}
-            </Accordion>
-          </TabsContent>
-          
-          <TabsContent value="high" className="space-y-4">
-            <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {renderFindingItems(highFindings)}
-            </Accordion>
-          </TabsContent>
-          
-          <TabsContent value="medium" className="space-y-4">
-            <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {renderFindingItems(mediumFindings)}
-            </Accordion>
-          </TabsContent>
-          
-          <TabsContent value="low" className="space-y-4">
-            <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {renderFindingItems(lowFindings)}
-            </Accordion>
-          </TabsContent>
-          
-          <TabsContent value="info" className="space-y-4">
-            <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-              {renderFindingItems(infoFindings)}
-            </Accordion>
-          </TabsContent>
-        </Tabs>
+        <Card>
+          <CardHeader>
+            <CardTitle>Security Findings</CardTitle>
+            <CardDescription>
+              {result.findings.length} {result.findings.length === 1 ? 'issue' : 'issues'} found in {result.repository}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="all" className="w-full">
+              <TabsList className="grid grid-cols-6 mb-6">
+                <TabsTrigger value="all">All ({result.findings.length})</TabsTrigger>
+                <TabsTrigger value="critical" disabled={criticalFindings.length === 0}>
+                  Critical ({criticalFindings.length})
+                </TabsTrigger>
+                <TabsTrigger value="high" disabled={highFindings.length === 0}>
+                  High ({highFindings.length})
+                </TabsTrigger>
+                <TabsTrigger value="medium" disabled={mediumFindings.length === 0}>
+                  Medium ({mediumFindings.length})
+                </TabsTrigger>
+                <TabsTrigger value="low" disabled={lowFindings.length === 0}>
+                  Low ({lowFindings.length})
+                </TabsTrigger>
+                <TabsTrigger value="info" disabled={infoFindings.length === 0}>
+                  Info ({infoFindings.length})
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="all" className="space-y-4">
+                <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
+                  {renderFindingItems(result.findings)}
+                </Accordion>
+              </TabsContent>
+              
+              <TabsContent value="critical" className="space-y-4">
+                <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
+                  {renderFindingItems(criticalFindings)}
+                </Accordion>
+              </TabsContent>
+              
+              <TabsContent value="high" className="space-y-4">
+                <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
+                  {renderFindingItems(highFindings)}
+                </Accordion>
+              </TabsContent>
+              
+              <TabsContent value="medium" className="space-y-4">
+                <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
+                  {renderFindingItems(mediumFindings)}
+                </Accordion>
+              </TabsContent>
+              
+              <TabsContent value="low" className="space-y-4">
+                <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
+                  {renderFindingItems(lowFindings)}
+                </Accordion>
+              </TabsContent>
+              
+              <TabsContent value="info" className="space-y-4">
+                <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
+                  {renderFindingItems(infoFindings)}
+                </Accordion>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       ) : (
         <Card className="text-center p-6">
           <CardContent className="pt-6">
