@@ -56,9 +56,9 @@ export const AppShell = ({ children }: AppShellProps) => {
       
       <footer className="py-6 px-4 md:px-6 border-t">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-1">
             <p>&copy; {new Date().getFullYear()} Agentic Security Scanner</p>
-            <span className="text-sm text-primary-blue font-medium">Created by rUv</span>
+            <p className="text-xs">Supported by the <a href="https://agentics.org" target="_blank" rel="noopener noreferrer" className="text-primary-blue hover:underline">Agentics Foundation</a></p>
           </div>
           <nav className="flex gap-4">
             <a href="#" className="hover:text-foreground transition-colors">Terms</a>
