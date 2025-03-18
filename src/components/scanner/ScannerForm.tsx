@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useScanStore } from '@/hooks/useScanStore';
+import { ScanningModal } from './ScanningModal';
+import { useState, useEffect } from 'react';
+import { useScanStore } from '@/hooks/useScanStore';  
 import { ScanResult } from '@/types/scanner';
 import { Shield, AlertCircle, Info, ArrowRight, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ interface ScannerFormProps {
 
 export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
   const { runScan, loading, currentScan, checkRecentScan } = useScanStore();
+  const [scanComplete, setScanComplete] = useState(false);
   const [repository, setRepository] = useState('agenticsorg/agentic-security');
   const [branch, setBranch] = useState('main');
   const [result, setResult] = useState<ScanResult | null>(null);
@@ -48,6 +50,18 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
     scanHistory: false,
     forceFreshScan: false
   });
+  
+  // Effect to handle auto-redirection when scan completes
+  useEffect(() => {
+    if (!loading && scanComplete && result) {
+      // Small delay to allow the scanning animation to complete
+      const timer = setTimeout(() => {
+        setFormComplete(true);
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [loading, scanComplete, result]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +74,8 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
     
     try {
       console.log("Starting scan process for:", repository, branch);
+      
+      setScanComplete(false);
       
       if (!advancedOptions.forceFreshScan) {
         const recentScan = checkRecentScan(repository, branch);
@@ -100,7 +116,7 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
       console.log("Summary:", scanResult.summary);
       
       setResult(scanResult);
-      setFormComplete(true);
+      setScanComplete(true);
       return scanResult;
     } catch (error) {
       console.error('Scan failed:', error);
@@ -134,6 +150,10 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
   }
 
   return (
+    <>
+      <ScanningModal isOpen={loading} status="scanning" repository={repository} />
+      
+
     <div className="space-y-8">
       <div className="max-w-2xl mx-auto text-center space-y-4">
         <div className="inline-flex items-center justify-center rounded-full p-3 bg-primary-blue/10 text-primary-blue mb-4">
@@ -414,5 +434,6 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
         </CardFooter>
       </Card>
     </div>
+    </>
   );
 };

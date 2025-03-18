@@ -32,6 +32,7 @@ export const ScanningModal = ({ isOpen, status, repository }: ScanningModalProps
         clearInterval(timer);
         // Set to 100 when done
         if (status !== 'scanning') {
+            // Reset progress to 100% when scan is complete
           setProgress(100);
         }
       };
