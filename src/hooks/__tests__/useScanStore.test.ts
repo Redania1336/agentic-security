@@ -1,7 +1,7 @@
 
 import { renderHook, act } from '@testing-library/react-hooks';
 import { useScanStore } from '../useScanStore';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import 'cross-fetch/polyfill';
 
@@ -26,33 +26,30 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
 });
 
-// Setup mock server
+// Setup mock server with MSW v2 syntax
 const server = setupServer(
-  rest.post('https://eojucgnpskovtadfwfir.supabase.co/functions/v1/security-scanner', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        scanId: 'test-scan-123',
-        timestamp: new Date().toISOString(),
-        findings: [
-          {
-            id: 'finding-1',
-            title: 'Test Finding',
-            description: 'This is a test finding',
-            severity: 'high',
-            createdAt: new Date().toISOString(),
-          }
-        ],
-        summary: {
-          critical: 0,
-          high: 1,
-          medium: 0,
-          low: 0,
-          info: 0
-        },
-        status: 'completed',
-      })
-    );
+  http.post('https://eojucgnpskovtadfwfir.supabase.co/functions/v1/security-scanner', () => {
+    return HttpResponse.json({
+      scanId: 'test-scan-123',
+      timestamp: new Date().toISOString(),
+      findings: [
+        {
+          id: 'finding-1',
+          title: 'Test Finding',
+          description: 'This is a test finding',
+          severity: 'high',
+          createdAt: new Date().toISOString(),
+        }
+      ],
+      summary: {
+        critical: 0,
+        high: 1,
+        medium: 0,
+        low: 0,
+        info: 0
+      },
+      status: 'completed',
+    })
   })
 );
 
