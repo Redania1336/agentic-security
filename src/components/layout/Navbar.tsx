@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Shield, History, Home } from 'lucide-react';
+import { Menu, X, Shield, History, Home, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -20,6 +20,7 @@ export const Navbar = ({ children }: NavbarProps) => {
     { label: 'Home', href: '/', icon: Home },
     { label: 'Scanner', href: '/scanner', icon: Shield },
     { label: 'History', href: '/history', icon: History },
+    { label: 'About', href: '/about', icon: Info },
   ];
 
   return (
@@ -28,7 +29,7 @@ export const Navbar = ({ children }: NavbarProps) => {
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2 font-semibold text-lg">
             <Shield className="h-6 w-6 text-primary-blue" />
-            <span className="hidden md:inline-block">Security Scanner</span>
+            <span className="hidden md:inline-block">Agentic Security Scanner</span>
           </Link>
         </div>
 
@@ -63,7 +64,7 @@ export const Navbar = ({ children }: NavbarProps) => {
                   <div className="flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2 font-semibold" onClick={() => setIsOpen(false)}>
                       <Shield className="h-6 w-6 text-primary-blue" />
-                      <span>Security Scanner</span>
+                      <span>Agentic Security Scanner</span>
                     </Link>
                     <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
                       <X className="h-5 w-5" />

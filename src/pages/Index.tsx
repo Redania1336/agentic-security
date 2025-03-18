@@ -1,5 +1,6 @@
 
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { 
   Shield, 
   Clock, 
@@ -12,7 +13,9 @@ import {
   Package,
   FileWarning,
   Activity,
-  RefreshCw
+  RefreshCw,
+  Lightbulb,
+  Bot
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,15 +27,31 @@ const Index = () => {
 
   return (
     <AppShell>
+      <Helmet>
+        <title>Agentic Security Scanner | AI-Powered Code Security Analysis</title>
+        <meta name="description" content="Discover real vulnerabilities with our AI-powered security scanner. Built with OpenAI Agents to provide intelligent scanning of your code repositories." />
+        <meta name="keywords" content="security scanner, code security, OpenAI, AI agents, vulnerability detection, static analysis, dependency scanning" />
+        <meta property="og:title" content="Agentic Security Scanner | AI-Powered Code Security" />
+        <meta property="og:description" content="Advanced security scanning powered by OpenAI Agents. Discover vulnerabilities, create GitHub issues, and secure your code with AI." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Agentic Security Scanner" />
+        <meta name="twitter:description" content="AI-powered security scanning for your code repositories" />
+      </Helmet>
+      
       <section className="py-12 md:py-24 space-y-24">
         {/* Hero Section */}
         <div className="container px-4 md:px-6 flex flex-col items-center text-center space-y-8">
           <div className="space-y-4 max-w-3xl">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Shield className="h-10 w-10 text-primary-blue" />
+              <Bot className="h-8 w-8 text-primary-blue" />
+            </div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tighter animate-fade-in">
-              Secure Your Code with Confidence
+              Agentic Security Scanner
             </h1>
             <p className="text-xl text-muted-foreground max-w-[700px] mx-auto animate-fade-in animation-delay-100">
-              Discover real vulnerabilities, track security posture, and protect your applications with our functional security scanner edge function.
+              Discover real vulnerabilities, track security posture, and protect your applications with our AI-powered security scanner built using OpenAI Agents.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 animate-fade-in animation-delay-200">
               <Button 
@@ -46,10 +65,10 @@ const Index = () => {
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => navigate('/history')}
+                onClick={() => navigate('/about')}
               >
-                View History
-                <Clock className="ml-2 h-5 w-5" />
+                Learn More
+                <Lightbulb className="ml-2 h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -63,7 +82,7 @@ const Index = () => {
                 </div>
                 <CardTitle className="text-xl">Static Analysis</CardTitle>
                 <CardDescription>
-                  Find vulnerabilities in your code with our functional scanner
+                  Find vulnerabilities in your code with our functional AI-powered scanner
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -99,7 +118,7 @@ const Index = () => {
           <div className="text-center space-y-4 mb-12">
             <h2 className="text-3xl font-bold tracking-tighter">How It Works</h2>
             <p className="text-muted-foreground max-w-[600px] mx-auto">
-              Our security scanner leverages an edge function to provide comprehensive security analysis
+              Our security scanner leverages OpenAI Agents to provide comprehensive security analysis
             </p>
           </div>
           
@@ -115,7 +134,7 @@ const Index = () => {
               </div>
               <h3 className="text-lg font-medium mt-4">Code Analysis</h3>
               <p className="text-sm text-muted-foreground">
-                Our edge function scans your code for vulnerabilities and secrets
+                Our AI agents scan your code for vulnerabilities and secrets
               </p>
             </div>
             
@@ -174,7 +193,7 @@ const Index = () => {
               <div className="max-w-3xl mx-auto text-center text-white space-y-6">
                 <h2 className="text-3xl font-bold tracking-tighter">Ready to secure your code?</h2>
                 <p className="text-lg opacity-90">
-                  Start scanning your repositories today with our working edge function and identify security vulnerabilities in real-time.
+                  Start scanning your repositories today with our OpenAI Agent-powered edge function and identify security vulnerabilities in real-time.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                   <Button className="bg-white text-primary-blue hover:bg-white/90" size="lg" onClick={() => navigate('/scanner')}>
