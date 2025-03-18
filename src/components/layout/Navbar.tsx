@@ -23,6 +23,16 @@ export const Navbar = ({ children }: NavbarProps) => {
     { label: 'About', href: '/about', icon: Info },
   ];
 
+  // Function to handle menu click - scrolls to top
+  const handleMenuClick = () => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+    setIsOpen(true);
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="container flex h-16 items-center justify-between">
@@ -53,7 +63,7 @@ export const Navbar = ({ children }: NavbarProps) => {
           {/* Mobile menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={handleMenuClick}>
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
