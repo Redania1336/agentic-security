@@ -337,13 +337,13 @@ export const ScannerForm = () => {
           <div className="flex items-start space-x-2 text-xs text-muted-foreground">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-orange-500" />
             <p>
-              This scanner is for demonstration purposes. No actual repositories will be accessed.
+              This scanner uses a real edge function to analyze repositories. Results are stored in your browser.
             </p>
           </div>
           <div className="flex items-start space-x-2 text-xs text-muted-foreground">
             <Info className="h-4 w-4 shrink-0 mt-0.5 text-blue-500" />
             <p>
-              For a production security scanner, check out GitHub Advanced Security or other commercial solutions.
+              For additional enterprise security features, consider GitHub Advanced Security or other commercial solutions.
             </p>
           </div>
         </CardFooter>

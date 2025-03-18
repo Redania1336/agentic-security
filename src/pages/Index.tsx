@@ -32,7 +32,7 @@ const Index = () => {
               Secure Your Code with Confidence
             </h1>
             <p className="text-xl text-muted-foreground max-w-[700px] mx-auto animate-fade-in animation-delay-100">
-              Discover vulnerabilities, track security posture, and protect your applications with our advanced security scanner.
+              Discover real vulnerabilities, track security posture, and protect your applications with our functional security scanner edge function.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 animate-fade-in animation-delay-200">
               <Button 
@@ -63,7 +63,7 @@ const Index = () => {
                 </div>
                 <CardTitle className="text-xl">Static Analysis</CardTitle>
                 <CardDescription>
-                  Find vulnerabilities in your code without executing it
+                  Find vulnerabilities in your code with our functional scanner
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -75,7 +75,7 @@ const Index = () => {
                 </div>
                 <CardTitle className="text-xl">Continuous Monitoring</CardTitle>
                 <CardDescription>
-                  Track security posture over time with historical data
+                  Track security posture over time with local browser storage
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -99,7 +99,7 @@ const Index = () => {
           <div className="text-center space-y-4 mb-12">
             <h2 className="text-3xl font-bold tracking-tighter">How It Works</h2>
             <p className="text-muted-foreground max-w-[600px] mx-auto">
-              Our security scanner provides comprehensive analysis to keep your applications safe
+              Our security scanner leverages an edge function to provide comprehensive security analysis
             </p>
           </div>
           
@@ -115,7 +115,7 @@ const Index = () => {
               </div>
               <h3 className="text-lg font-medium mt-4">Code Analysis</h3>
               <p className="text-sm text-muted-foreground">
-                Scans your code for vulnerabilities, secrets, and insecure patterns
+                Our edge function scans your code for vulnerabilities and secrets
               </p>
             </div>
             
@@ -174,11 +174,11 @@ const Index = () => {
               <div className="max-w-3xl mx-auto text-center text-white space-y-6">
                 <h2 className="text-3xl font-bold tracking-tighter">Ready to secure your code?</h2>
                 <p className="text-lg opacity-90">
-                  Start scanning your repositories today and identify security vulnerabilities before they become problems.
+                  Start scanning your repositories today with our working edge function and identify security vulnerabilities in real-time.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                   <Button className="bg-white text-primary-blue hover:bg-white/90" size="lg" onClick={() => navigate('/scanner')}>
-                    Start a Free Scan
+                    Start Scanning Now
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </div>
