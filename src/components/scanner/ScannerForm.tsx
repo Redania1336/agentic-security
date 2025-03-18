@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useScanStore } from '@/hooks/useScanStore';
 import { ScanResult } from '@/types/scanner';
-import { Shield, AlertCircle, Info, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Shield, AlertCircle, Info, ArrowRight, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +23,7 @@ interface AdvancedScanOptions {
   customDepth: string;
   customFileTypes: string;
   scanHistory: boolean;
+  forceFreshScan: boolean;
 }
 
 interface ScannerFormProps {
@@ -30,7 +31,7 @@ interface ScannerFormProps {
 }
 
 export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
-  const { runScan, loading, currentScan } = useScanStore();
+  const { runScan, loading, currentScan, checkRecentScan } = useScanStore();
   // Use "agenticsorg/agentic-security" as the default repository
   const [repository, setRepository] = useState('agenticsorg/agentic-security');
   const [branch, setBranch] = useState('main');
@@ -45,7 +46,8 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
     includeRecommendations: true,
     customDepth: '3',
     customFileTypes: 'js,ts,py,rb,go,java,php',
-    scanHistory: false
+    scanHistory: false,
+    forceFreshScan: false
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,7 +61,25 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
     }
     
     try {
-      console.log("Starting scan with parameters:", {
+      console.log("Starting scan process for:", repository, branch);
+      
+      // Check for recent scans unless force fresh scan is enabled
+      if (!advancedOptions.forceFreshScan) {
+        const recentScan = checkRecentScan(repository, branch);
+        if (recentScan) {
+          console.log("Found recent scan, reusing results:", recentScan);
+          toast.success("Using recent scan results");
+          setResult(recentScan);
+          setFormComplete(true);
+          return recentScan;
+        } else {
+          console.log("No recent scan found, proceeding with new scan");
+        }
+      } else {
+        console.log("Force fresh scan enabled, skipping recent scan check");
+      }
+      
+      console.log("Starting new scan with parameters:", {
         repository,
         branch,
         advanced: advancedOptions
@@ -85,8 +105,10 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
       
       setResult(scanResult);
       setFormComplete(true);
+      return scanResult;
     } catch (error) {
       console.error('Scan failed:', error);
+      return null;
     }
   };
 
@@ -149,7 +171,7 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
                 className="transition-all duration-300 focus-visible:ring-primary-blue"
               />
               <p className="text-xs text-muted-foreground">
-                Example: facebook/react
+                Example: agenticsorg/agentic-security
               </p>
             </div>
             
@@ -332,6 +354,27 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
                     </div>
                   )}
                 </div>
+                
+                <div className="flex items-start space-x-2 pt-2 border-t">
+                  <Checkbox 
+                    id="forceFreshScan"
+                    checked={advancedOptions.forceFreshScan}
+                    onCheckedChange={(checked) => 
+                      handleAdvancedOptionChange('forceFreshScan', Boolean(checked))
+                    }
+                  />
+                  <div className="grid gap-1.5">
+                    <label
+                      htmlFor="forceFreshScan"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Force Fresh Scan
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Always perform a new scan even if recent results exist
+                    </p>
+                  </div>
+                </div>
               </CollapsibleContent>
             </Collapsible>
             
@@ -354,6 +397,12 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
           </form>
         </CardContent>
         <CardFooter className="flex-col space-y-4 border-t pt-4">
+          <div className="flex items-start space-x-2 text-xs text-muted-foreground">
+            <Clock className="h-4 w-4 shrink-0 mt-0.5 text-green-500" />
+            <p>
+              Recent scan results are reused if available (within 5 minutes) for faster performance.
+            </p>
+          </div>
           <div className="flex items-start space-x-2 text-xs text-muted-foreground">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-orange-500" />
             <p>

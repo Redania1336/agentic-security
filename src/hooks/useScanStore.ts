@@ -7,12 +7,16 @@ import { toast } from 'sonner';
 const STORAGE_KEY = 'security-scanner-history';
 const EDGE_FUNCTION_BASE_URL = 'https://eojucgnpskovtadfwfir.supabase.co/functions/v1/security-scanner';
 const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvanVjZ25wc2tvdnRhZGZ3ZmlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2NDA3OTgsImV4cCI6MjA1MDIxNjc5OH0.n354_1M5MfeLPtiafQ4nN4QiYStK8N8cCpNw7eLW93Y';
+// Time threshold for considering a scan recent (in milliseconds)
+// Default: 5 minutes (300,000 ms)
+const RECENT_SCAN_THRESHOLD = 5 * 60 * 1000;
 
 interface ScanStore {
   history: ScanResult[];
   loading: boolean;
   currentScan: ScanResult | null;
   runScan: (request: ScanRequest) => Promise<ScanResult>;
+  checkRecentScan: (repository: string, branch?: string) => ScanResult | null;
   clearHistory: () => void;
   deleteResult: (id: string) => void;
 }
@@ -52,6 +56,46 @@ export const useScanStore = (): ScanStore => {
     } catch (error) {
       console.error('Failed to save scan history to localStorage:', error);
     }
+  };
+
+  // Check if a recent scan exists for the repository
+  const checkRecentScan = (repository: string, branch: string = 'main'): ScanResult | null => {
+    console.log(`Checking for recent scans of ${repository}/${branch}`);
+    
+    if (history.length === 0) {
+      console.log('No scan history found');
+      return null;
+    }
+    
+    const now = new Date().getTime();
+    const recentScans = history.filter(scan => {
+      // Match repository and branch
+      const isMatch = scan.repository === repository && 
+                     (scan.branch === branch || (!scan.branch && branch === 'main'));
+      
+      if (!isMatch) return false;
+      
+      // Check if scan is recent enough
+      const scanTime = new Date(scan.timestamp).getTime();
+      const timeDiff = now - scanTime;
+      const isRecent = timeDiff < RECENT_SCAN_THRESHOLD;
+      
+      if (isRecent) {
+        console.log(`Found recent scan from ${new Date(scan.timestamp).toLocaleString()}, ${timeDiff/1000} seconds ago`);
+      }
+      
+      return isRecent;
+    });
+    
+    if (recentScans.length > 0) {
+      // Sort by timestamp to get the most recent scan
+      recentScans.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      console.log('Using recent scan result:', recentScans[0].id);
+      return recentScans[0];
+    }
+    
+    console.log('No recent scans found for this repository/branch');
+    return null;
   };
 
   const runScan = async (request: ScanRequest): Promise<ScanResult> => {
@@ -213,6 +257,7 @@ export const useScanStore = (): ScanStore => {
     loading,
     currentScan,
     runScan,
+    checkRecentScan,
     clearHistory,
     deleteResult,
   };
