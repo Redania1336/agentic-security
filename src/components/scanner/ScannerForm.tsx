@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useScanStore } from '@/hooks/useScanStore';
 import { ScanResult } from '@/types/scanner';
@@ -13,6 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } fr
 import { useForm } from 'react-hook-form';
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 interface AdvancedScanOptions {
   useWebSearch: boolean;
@@ -32,7 +32,6 @@ interface ScannerFormProps {
 
 export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
   const { runScan, loading, currentScan, checkRecentScan } = useScanStore();
-  // Use "agenticsorg/agentic-security" as the default repository
   const [repository, setRepository] = useState('agenticsorg/agentic-security');
   const [branch, setBranch] = useState('main');
   const [result, setResult] = useState<ScanResult | null>(null);
@@ -55,7 +54,6 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
     
     if (!repository) return;
     
-    // Notify parent component that scanning has started
     if (onScanStart) {
       onScanStart(repository);
     }
@@ -63,7 +61,6 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
     try {
       console.log("Starting scan process for:", repository, branch);
       
-      // Check for recent scans unless force fresh scan is enabled
       if (!advancedOptions.forceFreshScan) {
         const recentScan = checkRecentScan(repository, branch);
         if (recentScan) {
@@ -85,7 +82,6 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
         advanced: advancedOptions
       });
       
-      // Include advanced options in the scan request
       const scanResult = await runScan({ 
         repository, 
         branch,
