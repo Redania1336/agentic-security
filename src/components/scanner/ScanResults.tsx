@@ -1,13 +1,14 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ScanResult, SecurityFinding, SeverityLevel } from '@/types/scanner';
-import { AlertCircle, AlertTriangle, Info, Shield, CheckCircle, FileText } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, Shield, CheckCircle, FileText, Code, Download } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
   CardDescription, 
   CardHeader, 
-  CardTitle 
+  CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import { 
   Accordion,
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 
 interface ScanResultsProps {
   result: ScanResult;
@@ -24,7 +26,8 @@ interface ScanResultsProps {
 
 export const ScanResults = ({ result }: ScanResultsProps) => {
   // Track open accordion items with proper string array
-  const [openItems, setOpenItems] = useState<string[]>([]);
+  const [openItems, setOpenItems] = useState<string[]>([]);  
+  const [rawJson, setRawJson] = useState<string>('');
   
   console.log("Rendering ScanResults with:", {
     findings: result.findings.length,
@@ -32,6 +35,36 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
     repository: result.repository,
     timestamp: result.timestamp
   });
+
+  // Format and store the raw JSON data
+  useEffect(() => {
+    try {
+      // Create a sanitized copy for display
+      const sanitizedResult = JSON.parse(JSON.stringify(result));
+      setRawJson(JSON.stringify(sanitizedResult, null, 2));
+      
+      // Save to local storage
+      localStorage.setItem(`scan_result_${result.repository}`, JSON.stringify(sanitizedResult));
+      console.log("Scan result saved to local storage");
+    } catch (error) {
+      console.error("Failed to process or save scan result:", error);
+      // Fallback - just stringify the object directly
+      setRawJson(JSON.stringify(result, null, 2));
+    }
+  }, [result]);
+  
+  // Function to download the raw JSON
+  const downloadRawJson = () => {
+    const blob = new Blob([rawJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `scan_result_${result.repository.replace('/', '_')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const getSeverityIcon = (severity: SeverityLevel) => {
     switch (severity) {
@@ -225,7 +258,7 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all" className="w-full">
-              <TabsList className="grid grid-cols-6 mb-6">
+              <TabsList className="grid grid-cols-7 mb-6">
                 <TabsTrigger value="all">All ({result.findings.length})</TabsTrigger>
                 <TabsTrigger value="critical" disabled={criticalFindings.length === 0}>
                   Critical ({criticalFindings.length})
@@ -241,6 +274,9 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
                 </TabsTrigger>
                 <TabsTrigger value="info" disabled={infoFindings.length === 0}>
                   Info ({infoFindings.length})
+                </TabsTrigger>
+                <TabsTrigger value="raw">
+                  Raw Data
                 </TabsTrigger>
               </TabsList>
               
@@ -278,6 +314,23 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
                 <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
                   {renderFindingItems(infoFindings)}
                 </Accordion>
+              </TabsContent>
+              
+              <TabsContent value="raw" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Code className="h-5 w-5" /> Raw JSON Data
+                    </CardTitle>
+                    <CardDescription>Complete scan result in JSON format</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="bg-muted p-4 rounded-md overflow-auto max-h-[400px] text-xs">{rawJson}</pre>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" size="sm" onClick={downloadRawJson}><Download className="h-4 w-4 mr-2" /> Download JSON</Button>
+                  </CardFooter>
+                </Card>
               </TabsContent>
             </Tabs>
           </CardContent>
