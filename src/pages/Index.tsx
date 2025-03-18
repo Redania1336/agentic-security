@@ -1,6 +1,4 @@
-
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { 
   Shield, 
   Clock, 
@@ -21,23 +19,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppShell } from '@/components/layout/AppShell';
 import { ScannerForm } from '@/components/scanner/ScannerForm';
+import { SEO } from '@/components/layout/SEO';
 
 const Index = () => {
   const navigate = useNavigate();
 
   return (
     <AppShell>
-      <Helmet>
-        <title>Agentic Security Scanner | AI-Powered Code Security Analysis</title>
-        <meta name="description" content="Discover real vulnerabilities with our AI-powered security scanner. Built with OpenAI Agents to provide intelligent scanning of your code repositories." />
-        <meta name="keywords" content="security scanner, code security, OpenAI, AI agents, vulnerability detection, static analysis, dependency scanning" />
-        <meta property="og:title" content="Agentic Security Scanner | AI-Powered Code Security" />
-        <meta property="og:description" content="Advanced security scanning powered by OpenAI Agents. Discover vulnerabilities, create GitHub issues, and secure your code with AI." />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Agentic Security Scanner" />
-        <meta name="twitter:description" content="AI-powered security scanning for your code repositories" />
-      </Helmet>
+      <SEO 
+        title="AI-Powered Code Security Analysis | Agentic Security Scanner"
+        description="Discover real vulnerabilities with our AI-powered security scanner. Built with OpenAI Agents to provide intelligent scanning of your code repositories."
+        keywords="security scanner, code security, OpenAI, AI agents, vulnerability detection, static analysis, dependency scanning, GitHub integration"
+      />
       
       <section className="py-12 md:py-24 space-y-24">
         {/* Hero Section */}
