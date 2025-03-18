@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { ScanResult, SecurityFinding, SeverityLevel } from '@/types/scanner';
-import { AlertCircle, AlertTriangle, Info, Shield, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, Shield, CheckCircle } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
@@ -23,12 +23,6 @@ interface ScanResultsProps {
 }
 
 export const ScanResults = ({ result }: ScanResultsProps) => {
-  const [expandedFinding, setExpandedFinding] = useState<string | null>(null);
-
-  const toggleFinding = (id: string) => {
-    setExpandedFinding(expandedFinding === id ? null : id);
-  };
-
   const getSeverityIcon = (severity: SeverityLevel) => {
     switch (severity) {
       case 'critical':
@@ -71,6 +65,37 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
   const infoFindings = result.findings.filter(f => f.severity === 'info');
 
   const hasFindings = result.findings.length > 0;
+
+  // Render finding details content
+  const renderFindingDetails = (finding: SecurityFinding) => (
+    <div className="space-y-4">
+      <p className="text-muted-foreground">{finding.description}</p>
+      
+      {finding.location && (
+        <div>
+          <p className="text-sm font-medium mb-1">Location</p>
+          <code className="text-xs bg-muted px-2 py-1 rounded">{finding.location}</code>
+        </div>
+      )}
+      
+      {finding.codeSnippet && (
+        <div>
+          <p className="text-sm font-medium mb-1">Code Snippet</p>
+          <pre className="text-xs bg-muted p-3 rounded overflow-x-auto">{finding.codeSnippet}</pre>
+        </div>
+      )}
+      
+      {finding.recommendation && (
+        <div className="bg-primary-blue/10 p-3 rounded flex gap-3">
+          <CheckCircle className="h-5 w-5 text-primary-blue shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium mb-1">Recommendation</p>
+            <p className="text-sm">{finding.recommendation}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-8">
@@ -176,33 +201,7 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
-                    <div className="space-y-4">
-                      <p className="text-muted-foreground">{finding.description}</p>
-                      
-                      {finding.location && (
-                        <div>
-                          <p className="text-sm font-medium mb-1">Location</p>
-                          <code className="text-xs bg-muted px-2 py-1 rounded">{finding.location}</code>
-                        </div>
-                      )}
-                      
-                      {finding.codeSnippet && (
-                        <div>
-                          <p className="text-sm font-medium mb-1">Code Snippet</p>
-                          <pre className="text-xs bg-muted p-3 rounded overflow-x-auto">{finding.codeSnippet}</pre>
-                        </div>
-                      )}
-                      
-                      {finding.recommendation && (
-                        <div className="bg-primary-blue/10 p-3 rounded flex gap-3">
-                          <CheckCircle className="h-5 w-5 text-primary-blue shrink-0 mt-0.5" />
-                          <div>
-                            <p className="text-sm font-medium mb-1">Recommendation</p>
-                            <p className="text-sm">{finding.recommendation}</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {renderFindingDetails(finding)}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -225,54 +224,30 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
-                    {/* Similar content structure as above */}
-                    <div className="space-y-4">
-                      <p className="text-muted-foreground">{finding.description}</p>
-                      
-                      {finding.location && (
-                        <div>
-                          <p className="text-sm font-medium mb-1">Location</p>
-                          <code className="text-xs bg-muted px-2 py-1 rounded">{finding.location}</code>
-                        </div>
-                      )}
-                      
-                      {finding.codeSnippet && (
-                        <div>
-                          <p className="text-sm font-medium mb-1">Code Snippet</p>
-                          <pre className="text-xs bg-muted p-3 rounded overflow-x-auto">{finding.codeSnippet}</pre>
-                        </div>
-                      )}
-                      
-                      {finding.recommendation && (
-                        <div className="bg-primary-blue/10 p-3 rounded flex gap-3">
-                          <CheckCircle className="h-5 w-5 text-primary-blue shrink-0 mt-0.5" />
-                          <div>
-                            <p className="text-sm font-medium mb-1">Recommendation</p>
-                            <p className="text-sm">{finding.recommendation}</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {renderFindingDetails(finding)}
                   </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
           </TabsContent>
           
-          {/* Similar TabsContent for high, medium, low, and info severities */}
           <TabsContent value="high" className="space-y-4">
-            {/* High severity findings */}
             <Accordion type="single" collapsible className="w-full">
               {highFindings.map((finding) => (
                 <AccordionItem key={finding.id} value={finding.id} className="neo-blur mb-4 rounded-lg overflow-hidden">
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex items-center gap-3 text-left">
                       {getSeverityIcon(finding.severity)}
-                      <h3 className="font-medium">{finding.title}</h3>
+                      <div>
+                        <h3 className="font-medium">{finding.title}</h3>
+                        <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
+                          {finding.severity}
+                        </Badge>
+                      </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
-                    {/* Finding details */}
+                    {renderFindingDetails(finding)}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -286,11 +261,16 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex items-center gap-3 text-left">
                       {getSeverityIcon(finding.severity)}
-                      <h3 className="font-medium">{finding.title}</h3>
+                      <div>
+                        <h3 className="font-medium">{finding.title}</h3>
+                        <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
+                          {finding.severity}
+                        </Badge>
+                      </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
-                    {/* Finding details */}
+                    {renderFindingDetails(finding)}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -304,11 +284,16 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex items-center gap-3 text-left">
                       {getSeverityIcon(finding.severity)}
-                      <h3 className="font-medium">{finding.title}</h3>
+                      <div>
+                        <h3 className="font-medium">{finding.title}</h3>
+                        <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
+                          {finding.severity}
+                        </Badge>
+                      </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
-                    {/* Finding details */}
+                    {renderFindingDetails(finding)}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -322,11 +307,16 @@ export const ScanResults = ({ result }: ScanResultsProps) => {
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex items-center gap-3 text-left">
                       {getSeverityIcon(finding.severity)}
-                      <h3 className="font-medium">{finding.title}</h3>
+                      <div>
+                        <h3 className="font-medium">{finding.title}</h3>
+                        <Badge variant="outline" className={`${getSeverityColor(finding.severity)} mt-1`}>
+                          {finding.severity}
+                        </Badge>
+                      </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
-                    {/* Finding details */}
+                    {renderFindingDetails(finding)}
                   </AccordionContent>
                 </AccordionItem>
               ))}
