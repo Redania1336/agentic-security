@@ -396,7 +396,7 @@ export const ScannerForm = ({ onScanStart }: ScannerFormProps) => {
           <div className="flex items-start space-x-2 text-xs text-muted-foreground">
             <Clock className="h-4 w-4 shrink-0 mt-0.5 text-green-500" />
             <p>
-              Recent scan results are reused if available (within 5 minutes) for faster performance.
+              Recent scan results are reused if available (within 24 hours) for faster performance.
             </p>
           </div>
           <div className="flex items-start space-x-2 text-xs text-muted-foreground">

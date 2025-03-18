@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ScanResult, ScanRequest } from '@/types/scanner';
 import { generateMockScanResult, generateMockHistory } from '@/utils/mockData';
@@ -8,8 +7,8 @@ const STORAGE_KEY = 'security-scanner-history';
 const EDGE_FUNCTION_BASE_URL = 'https://eojucgnpskovtadfwfir.supabase.co/functions/v1/security-scanner';
 const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvanVjZ25wc2tvdnRhZGZ3ZmlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ2NDA3OTgsImV4cCI6MjA1MDIxNjc5OH0.n354_1M5MfeLPtiafQ4nN4QiYStK8N8cCpNw7eLW93Y';
 // Time threshold for considering a scan recent (in milliseconds)
-// Default: 5 minutes (300,000 ms)
-const RECENT_SCAN_THRESHOLD = 5 * 60 * 1000;
+// Default: 24 hours (24 * 60 * 60 * 1000 = 86,400,000 ms)
+const RECENT_SCAN_THRESHOLD = 24 * 60 * 60 * 1000;
 
 interface ScanStore {
   history: ScanResult[];
@@ -81,7 +80,8 @@ export const useScanStore = (): ScanStore => {
       const isRecent = timeDiff < RECENT_SCAN_THRESHOLD;
       
       if (isRecent) {
-        console.log(`Found recent scan from ${new Date(scan.timestamp).toLocaleString()}, ${timeDiff/1000} seconds ago`);
+        const hoursAgo = Math.round(timeDiff / (60 * 60 * 1000) * 10) / 10;
+        console.log(`Found recent scan from ${new Date(scan.timestamp).toLocaleString()}, ${hoursAgo} hours ago`);
       }
       
       return isRecent;
