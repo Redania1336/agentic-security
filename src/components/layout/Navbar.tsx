@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Shield, History, Home, Info } from 'lucide-react';
+import { Menu, X, Shield, History, Home, Info, Terminal, Database, Lock, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -17,9 +17,9 @@ export const Navbar = ({ children }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { label: 'Home', href: '/', icon: Home },
+    { label: 'Home', href: '/', icon: Terminal },
     { label: 'Scanner', href: '/scanner', icon: Shield },
-    { label: 'History', href: '/history', icon: History },
+    { label: 'History', href: '/history', icon: Database },
     { label: 'About', href: '/about', icon: Info },
   ];
 
@@ -49,8 +49,9 @@ export const Navbar = ({ children }: NavbarProps) => {
             <Link
               key={item.href}
               to={item.href}
-              className="text-sm font-medium hover:text-primary transition-colors relative group"
+              className="text-sm font-medium hover:text-primary transition-colors relative group flex items-center gap-2"
             >
+              <item.icon className="h-4 w-4 text-primary-blue" />
               {item.label}
               <span className="absolute -bottom-[1px] left-0 w-0 h-0.5 bg-primary-blue transition-all duration-300 group-hover:w-full"></span>
             </Link>
